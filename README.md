@@ -1,67 +1,98 @@
-# Port Inventory Management System
+# Port Inventory Management System (PIMS) 🚢⚓
 
-A full-stack, enterprise-grade seaport logistics and inventory management system built with Node.js, Express, PostgreSQL, Sequelize, Socket.io, React, and TailwindCSS.
+![License](https://img.shields.io/badge/License-MIT-blue.svg)
+![React](https://img.shields.io/badge/Frontend-React%2019-sky)
+![NodeJS](https://img.shields.io/badge/Backend-Node.js%20%2F%20Express%205-green)
+![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL%20%2F%20Sequelize-blue)
+![Python](https://img.shields.io/badge/Sidecar-Python%20FastAPI-yellow)
 
----
-
-## Features
-
-- **Multi-Role Authentication**: Support for Shipping Agents, Port Operations Officers, Customs Officers, Warehouse Managers, and Finance Officers.
-- **Port Operations & Berth Management**: Real-time vessel calls, berth allocation, and discharge tally sheet logging.
-- **Cargo Inventory & Yard Staging**: Spatial yard tracking, internal relocation move tickets, and real-time occupancy maps.
-- **Customs & Regulatory Clearance**: ICEGATE Bill of Entry verification, Out of Charge (OOC) releases, and statutory seizures.
-- **Scale of Rates (SOR) Billing**: Automated demurrage calculation engine, progressive slab rates, and pre-deposit account (PDA) ledger settlements.
-- **Electronic Delivery Order (e-DO)**: Generation and verification of digital e-DO certificates.
+An enterprise-grade, full-stack **Port Inventory & Maritime Logistics Management System** designed for seaport terminal operations, cargo handling, customs clearance, spatial yard management, and automated Scale of Rates (SOR) demurrage billing.
 
 ---
 
-## Quick Start
+## 🌟 Key Features & Functional Modules
 
-### 1. Backend Setup
+### 🚢 1. Shipping Agent Portal & Manifest Management
+* **Vessel Arrival Declarations**: Submit Vessel Call Numbers (VCN), voyage numbers, LOA, and draft requirements.
+* **Bulk Manifest Uploads**: Upload bulk container manifest data via CSV with automatic coordinate mapping.
+* **Electronic Delivery Order (e-DO)**: Issue digital e-DO certificates with SHA-256 verification tokens upon clearance.
+* **PDA Prepaid Ledger**: Settle port invoices and wharfage charges using Pre-Deposit Accounts.
 
+### ⚓ 2. Terminal Operations & Berth Allocation
+* **Interactive Berth Management**: Allocate quays, jetties, and berths (Container Terminals, POL Jetties, Bulk Coal Berths).
+* **Live Vessel Tracking**: Real-time status tracking for berthed, incoming, and departed vessels.
+* **Tally Discharge Logging**: Record discharge tally weights per shift with automated inventory updates.
+
+### 🏭 3. Spatial Yard & Warehouse Management
+* **Terminal Layout Visualization**: Real-time spatial map of transit sheds, open stackyards, reefer zones, and POL chemical tank farms.
+* **Internal Move Tracking**: Issue move tickets to relocate cargo between quays and yard grid blocks using reach stackers.
+* **Inventory Ledger Audit**: Immutable ledger tracking cargo weight, storage duration, and hazmat classifications.
+
+### 🛡️ 4. Customs Clearance & Regulatory Control
+* **ICEGATE Integration**: Verify Bill of Entry (BOE), Customs Broker licenses, and Out of Charge (OOC) clearances.
+* **Statutory Holds & Seizures**: Apply physical examination holds, phytosanitary checks, or emergency customs seizures.
+
+### 💰 5. SOR Tariff Engine & Automated Billing
+* **Progressive Demurrage Calculation**: Tiered Scale of Rates (SOR) calculator handling free working days (7-day Import / 21-day Export).
+* **Fractional Weight Rounding**: Enforces standard port fractional rounding (0.5 MT step, 1.0 MT floor).
+* **Tax Invoice Generation**: Automated GST invoice generation with CGST/SGST itemization and printable PDF receipts.
+
+---
+
+## 🛠️ Technology Stack
+
+| Layer | Technology |
+| :--- | :--- |
+| **Frontend** | React 19, Vite, TailwindCSS, Lucide Icons, Recharts |
+| **Backend** | Node.js, Express 5, Socket.io (Real-Time Engine) |
+| **Database** | PostgreSQL, Sequelize ORM |
+| **Sidecar Engine** | Python, FastAPI, SQLAlchemy |
+| **Authentication** | JWT (JSON Web Tokens), Bcrypt Password Hashing |
+
+---
+
+## 🚀 Quick Start Guide
+
+### Prerequisites
+* **Node.js**: v18+ 
+* **PostgreSQL**: v14+
+
+### 1. Repository Setup
+```bash
+git clone https://github.com/prathaam17/Port-Inventory-Management-System.git
+cd Port-Inventory-Management-System
+```
+
+### 2. Backend Setup
 ```bash
 cd backend
 npm install
-
-# Create environment file from example
-cp .env.example .env
-
-# Seed demo scenarios & initialize database
+# Configure PostgreSQL database settings in backend/.env
 npm run seed:demo
-
-# Start backend dev server
-npm run dev
+npm start
 ```
 
-### 2. Frontend Setup
-
+### 3. Frontend Setup
 ```bash
-cd frontend
+cd ../frontend
 npm install
-
-# Start Vite dev server
 npm run dev
 ```
 
 ---
 
-## Environment Variables
+## 🔐 Demo User Credentials
 
-Copy `backend/.env.example` to `backend/.env`:
-
-```env
-PORT=5000
-DB_DIALECT=postgres
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=port_inventory
-DB_USER=postgres
-DB_PASSWORD=postgres
-JWT_SECRET=mngprt_super_secret_key_2026
-```
+| Role | Username | Password |
+| :--- | :--- | :--- |
+| **Shipping Agent** | `shipping` | `password123` |
+| **Port Operations Officer** | `ops` | `password123` |
+| **Customs Officer** | `customs` | `password123` |
+| **Finance Manager** | `finance` | `password123` |
+| **Warehouse Manager** | `warehouse` | `password123` |
+| **Super Admin** | `admin` | `password123` |
 
 ---
 
-## License
-
-ISC License
+## 📄 License
+Distributed under the MIT License. See `LICENSE` for details.
