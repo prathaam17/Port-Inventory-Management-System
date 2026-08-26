@@ -25,10 +25,32 @@ exports.createUser = async (req, res) => {
       return res.status(400).json({ message: 'All fields are required.' });
     }
 
+    const { validateField } = require('../middleware/validator');
+    const emailErr = validateField('email', email, { required: true, format: 'email', label: 'Email' });
+    if (emailErr) return res.status(400).json({ message: emailErr });
+
+    const passErr = validateField('password', password, { required: true, minLength: 6, label: 'Password' });
+    if (passErr) return res.status(400).json({ message: passErr });
+
+    // Validate foreign key roleId exists
+    const parsedRoleId = parseInt(roleId);
+    if (isNaN(parsedRoleId)) {
+      return res.status(400).json({ message: 'Role ID must be a valid integer.' });
+    }
+    const roleObj = await Role.findByPk(parsedRoleId);
+    if (!roleObj) {
+      return res.status(400).json({ message: `Role with ID ${roleId} does not exist.` });
+    }
+
     // Check if user already exists
     const existing = await User.findOne({ where: { username } });
     if (existing) {
       return res.status(400).json({ message: 'Username is already taken.' });
+    }
+
+    const existingEmail = await User.findOne({ where: { email } });
+    if (existingEmail) {
+      return res.status(400).json({ message: 'Email is already in use.' });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -38,7 +60,7 @@ exports.createUser = async (req, res) => {
       username,
       email,
       password: passwordHash,
-      roleId: parseInt(roleId),
+      roleId: parsedRoleId,
       status: 'active'
     });
 
@@ -50,7 +72,7 @@ exports.createUser = async (req, res) => {
     await logActivity(
       req,
       'USER_CREATION',
-      `Created user account: ${username} with role ${createdUser.Role.name}.`
+      `Created user account: ${username} with role ${createdUser && createdUser.Role ? createdUser.Role.name : 'User'}.`
     );
 
     return res.status(201).json({
@@ -74,11 +96,23 @@ exports.updateUser = async (req, res) => {
       return res.status(404).json({ message: 'User not found.' });
     }
 
-    if (roleId) {
-      user.roleId = parseInt(roleId);
+    if (roleId !== undefined) {
+      const parsedRoleId = parseInt(roleId);
+      if (isNaN(parsedRoleId)) {
+        return res.status(400).json({ message: 'Role ID must be a valid integer.' });
+      }
+      const roleObj = await Role.findByPk(parsedRoleId);
+      if (!roleObj) {
+        return res.status(400).json({ message: `Role with ID ${roleId} does not exist.` });
+      }
+      user.roleId = parsedRoleId;
     }
 
-    if (status) {
+    if (status !== undefined) {
+      const allowedStatuses = ['active', 'inactive'];
+      if (!allowedStatuses.includes(status)) {
+        return res.status(400).json({ message: `Status must be one of: ${allowedStatuses.join(', ')}.` });
+      }
       user.status = status;
     }
 
@@ -92,7 +126,7 @@ exports.updateUser = async (req, res) => {
     await logActivity(
       req,
       'USER_MODIFICATION',
-      `Updated user ${user.username}. Role: ${updatedUser.Role.name}, Status: ${updatedUser.status}.`
+      `Updated user ${user.username}. Role: ${updatedUser && updatedUser.Role ? updatedUser.Role.name : 'User'}, Status: ${updatedUser.status}.`
     );
 
     return res.json({

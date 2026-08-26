@@ -35,12 +35,13 @@ const Navbar = ({ toggleSidebar, isSidebarOpen }) => {
           <Menu className="w-5 h-5 text-white" />
         </button>
         
-        <div className="flex items-center select-none">
-          <img 
-            src="/nmpa_logo.png" 
-            alt="New Mangalore Port Authority Logo" 
-            className="h-26 w-auto object-contain max-w-[320px] sm:max-w-xl" 
-          />
+        <div className="flex items-center gap-3 select-none">
+          <div className="p-2 rounded-xl bg-white/10 border border-white/20 text-sky-300">
+            <Anchor className="w-6 h-6" />
+          </div>
+          <span className="text-lg sm:text-xl md:text-2xl font-black text-white tracking-wider uppercase font-sans">
+            Port Inventory Management System
+          </span>
         </div>
       </div>
 

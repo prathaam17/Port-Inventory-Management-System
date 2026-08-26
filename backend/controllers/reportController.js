@@ -1,4 +1,4 @@
-const { Cargo, Warehouse, Invoice, GatePass, AuditLog, Notification, Role, User, sequelize } = require('../models');
+const { Cargo, Warehouse, Invoice, AuditLog, Notification, Role, User, sequelize } = require('../models');
 const { Op } = require('sequelize');
 
 // Dashboard Overview Statistics
@@ -13,25 +13,20 @@ exports.getDashboardStats = async (req, res) => {
     const cargoTypes = await Cargo.findAll({
       attributes: [
         'cargoType',
-        [sequelize.fn('COUNT', sequelize.col('id')), 'count'],
-        [sequelize.fn('SUM', sequelize.col('weight')), 'totalWeight']
+        [sequelize.fn('COUNT', sequelize.col('cargo_id')), 'count'],
+        [sequelize.fn('SUM', sequelize.col('weight_mats')), 'totalWeight']
       ],
-      group: ['cargoType']
+      group: [sequelize.col('cargo_type'), 'cargoType']
     });
 
     // 3. Warehouse occupancy percentage
-    const warehouses = await Warehouse.findAll();
-    let totalCapacity = 0;
-    let totalOccupied = 0;
-    warehouses.forEach(w => {
-      totalCapacity += w.capacity;
-      totalOccupied += w.occupiedSpace;
-    });
+    const totalCapacity = await Warehouse.sum('capacity') || 0;
+    const totalOccupied = await Warehouse.sum('occupiedSpace') || 0;
     const warehouseUtil = totalCapacity > 0 ? (totalOccupied / totalCapacity) * 100 : 0;
 
     // 4. Invoices total pending revenue vs paid revenue
     const paidRevenue = await Invoice.sum('totalAmount', { where: { status: 'Paid' } }) || 0;
-    const pendingRevenue = await Invoice.sum('totalAmount', { where: { status: 'Pending' } }) || 0;
+    const pendingRevenue = await Invoice.sum('totalAmount', { where: { status: { [Op.in]: ['Unpaid', 'Pending'] } } }) || 0;
 
     // 5. Customs pending count
     const pendingCustomsCount = await Cargo.count({ where: { status: ['Unloaded', 'Allocated'] } });
@@ -42,14 +37,7 @@ exports.getDashboardStats = async (req, res) => {
       order: [['createdAt', 'DESC']]
     });
 
-    // 7. Gate traffic log count (Today)
-    const gateTrafficToday = await GatePass.count({
-      where: {
-        createdAt: {
-          [Op.gte]: new Date(new Date().setHours(0, 0, 0, 0))
-        }
-      }
-    });
+
 
     return res.json({
       kpis: {
@@ -57,8 +45,7 @@ exports.getDashboardStats = async (req, res) => {
         warehouseUtil: Math.round(warehouseUtil * 10) / 10,
         paidRevenue,
         pendingRevenue,
-        pendingCustomsCount,
-        gateTrafficToday
+        pendingCustomsCount
       },
       cargoTypes,
       recentActivity
@@ -111,21 +98,55 @@ exports.getAnalyticsReports = async (req, res) => {
       { day: 'Sun', Container: 0, Bulk: 0, Liquid: 0, BreakBulk: 0 }
     ];
 
+    const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    
+    // Only load cargo from the last 7 days to calculate daily tonnage (O(N) in-memory data reduction)
+    const cargoesForTonnage = await Cargo.findAll({
+      where: {
+        [Op.or]: [
+          { entryTime: { [Op.gte]: sevenDaysAgo } },
+          {
+            entryTime: null,
+            createdAt: { [Op.gte]: sevenDaysAgo }
+          }
+        ]
+      }
+    });
+    cargoesForTonnage.forEach(c => {
+      const date = new Date(c.entryTime || c.createdAt);
+      const dayName = daysOfWeek[date.getDay()];
+      const key = c.cargoType === 'Break Bulk' ? 'BreakBulk' : c.cargoType;
+      
+      const dayObj = dailyTonnage.find(d => d.day === dayName);
+      if (dayObj && dayObj[key] !== undefined) {
+        dayObj[key] += parseFloat(c.weight || 0);
+      }
+    });
+
+
     // 4. Dynamic operational summary metrics (statsSummary)
     const totalActiveTonnage = await Cargo.sum('weight', {
       where: { status: { [Op.ne]: 'Dispatched' } }
     }) || 0;
 
-    const activeCargoes = await Cargo.findAll({
+    // Use efficient DB counts instead of fetching all active cargo records
+    const activeCount = await Cargo.count({
       where: { status: { [Op.ne]: 'Dispatched' } }
     });
-    const activeCount = activeCargoes.length;
-    let demurrageCount = 0;
+    
     const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
-    activeCargoes.forEach(c => {
-      const entry = new Date(c.entryTime || c.createdAt);
-      if (entry < threeDaysAgo) {
-        demurrageCount++;
+    const demurrageCount = await Cargo.count({
+      where: {
+        status: { [Op.ne]: 'Dispatched' },
+        [Op.or]: [
+          { entryTime: { [Op.lt]: threeDaysAgo } },
+          {
+            entryTime: null,
+            createdAt: { [Op.lt]: threeDaysAgo }
+          }
+        ]
       }
     });
     const demurrageRatio = activeCount > 0 ? Math.round((demurrageCount / activeCount) * 1000) / 10 : 0.0;

@@ -4,8 +4,17 @@ import API from '../services/api';
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token') || null);
+  const [user, setUser] = useState(() => {
+    try {
+      const savedUser = localStorage.getItem('user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch (e) {
+      console.warn('Failed to parse cached user state:', e);
+      localStorage.removeItem('user');
+      return null;
+    }
+  });
+  const [token, setToken] = useState(() => localStorage.getItem('token') || null);
   const [loading, setLoading] = useState(true);
 
   // Validate session on startup
@@ -37,7 +46,7 @@ export const AuthProvider = ({ children }) => {
       setUser(receivedUser);
       return { success: true };
     } catch (error) {
-      const msg = error.response?.data?.message || 'Login failed. Please check your credentials.';
+      const msg = error.response?.data?.message || (error.code === 'ERR_NETWORK' || !error.response ? 'Unable to connect to backend server. Please verify backend is running.' : 'Login failed. Please check your credentials.');
       return { success: false, error: msg };
     }
   };

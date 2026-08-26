@@ -1,49 +1,32 @@
 const { Sequelize } = require('sequelize');
 const path = require('path');
-require('dotenv').config();
+const fs = require('fs');
+const dotenv = require('dotenv');
 
-const dialect = process.env.DB_DIALECT || 'postgres';
+const backendEnvPath = path.join(__dirname, '..', '.env');
+if (fs.existsSync(backendEnvPath)) {
+  dotenv.config({ path: backendEnvPath });
+} else {
+  dotenv.config();
+}
 
-let sequelize;
-
-if (dialect === 'sqlite') {
-  // SQLite configuration if explicitly requested
-  sequelize = new Sequelize({
-    dialect: 'sqlite',
-    storage: path.join(__dirname, '..', 'port_inventory.db'),
-    logging: false
-  });
-} else if (process.env.DATABASE_URL) {
-  // Production PostgreSQL connection string (Render/Neon/Heroku)
-  sequelize = new Sequelize(process.env.DATABASE_URL, {
+// Exclusive PostgreSQL Connection
+const sequelize = new Sequelize(
+  process.env.DB_NAME || 'port_inventory',
+  process.env.DB_USER || 'postgres',
+  process.env.DB_PASSWORD || 'postgres',
+  {
+    host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || 5432,
     dialect: 'postgres',
     logging: false,
-    dialectOptions: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false
-      }
+    pool: {
+      max: 10,
+      min: 0,
+      acquire: 30000,
+      idle: 10000
     }
-  });
-} else {
-  // Default to PostgreSQL
-  sequelize = new Sequelize(
-    process.env.DB_NAME || 'port_inventory',
-    process.env.DB_USER || 'postgres',
-    process.env.DB_PASSWORD || 'postgres',
-    {
-      host: process.env.DB_HOST || 'localhost',
-      port: process.env.DB_PORT || 5432,
-      dialect: 'postgres',
-      logging: false,
-      pool: {
-        max: 5,
-        min: 0,
-        acquire: 30000,
-        idle: 10000
-      }
-    }
-  );
-}
+  }
+);
 
 module.exports = sequelize;

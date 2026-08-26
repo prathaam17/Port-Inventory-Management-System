@@ -11,21 +11,32 @@
   /* Main Background (Pure White) */
   --color-slate-50: #FFFFFF;
   --color-slate-100: #F8FAFC;
+  --color-slate-105: #F1F5F9;
   
   /* Borders (Subtle Slate Gray) */
   --color-slate-200: #E2E8F0;
+  --color-slate-205: #E2E8F0;
+  --color-slate-250: #CBD5E1;
   --color-slate-300: #E2E8F0;
   
   /* Secondary Text (Cool Gray) */
+  --color-slate-305: #94A3B8;
   --color-slate-350: #64748B;
   --color-slate-400: #64748B;
   --color-slate-450: #64748B;
   --color-slate-500: #64748B;
+  --color-slate-550: #475569;
   --color-slate-600: #475569;
+  --color-slate-650: #334155;
+  --color-slate-655: #334155;
   
   /* Primary Text & Headings (Deep Ink Navy/Black) */
   --color-slate-700: #0F172A;
+  --color-slate-705: #1E293B;
+  --color-slate-750: #1E293B;
+  --color-slate-755: #1E293B;
   --color-slate-800: #0F172A;
+  --color-slate-805: #0F172A;
   --color-slate-850: #0F172A;
   --color-slate-900: #0F172A;
   --color-slate-950: #020617;
@@ -56,7 +67,7 @@
 
 @layer base {
   html {
-    font-size: 17.5px; /* Increases all rem-based font sizes globally by ~9.3% */
+    font-size: 20px; /* Highly visible font size for presentation screens and projectors */
   }
   
   body {
@@ -96,13 +107,21 @@
 
 /* Print CSS Configurations */
 @media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   body {
     background: white !important;
     color: black !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
   
   /* Hide non-printable elements */
   .no-print,
+  .no-print-backdrop,
   aside,
   nav,
   button,
@@ -110,25 +129,41 @@
     display: none !important;
   }
 
-  /* Make content take full width */
+  /* Make content take full width and override layout */
   .print-container {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
     width: 100% !important;
+    max-width: 100% !important;
     margin: 0 !important;
-    padding: 0 !important;
+    padding: 20px !important;
     border: none !important;
     box-shadow: none !important;
-  }
-
-  /* Force table formatting */
-  table {
-    border-collapse: collapse !important;
-    width: 100% !important;
-  }
-
-  th, td {
-    border: 1px solid #ddd !important;
-    padding: 8px !important;
+    background: white !important;
     color: black !important;
+    z-index: 99999 !important;
+    border-radius: 0 !important;
+  }
+
+  #root,
+  .min-h-screen,
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    position: static !important;
+  }
+
+  /* Preserve header & table colors */
+  th, td {
+    color: black !important;
+  }
+
+  thead th {
+    font-weight: bold !important;
   }
 }
 
@@ -149,4 +184,62 @@
 
 .dark .glow-blue {
   box-shadow: 0 0 25px rgba(14, 165, 233, 0.25);
+}
+
+/* Navbar font size locks to keep header compact */
+nav {
+  font-size: 16px !important;
+}
+nav .text-xs { font-size: 12px !important; }
+nav .text-sm { font-size: 14px !important; }
+nav .text-base { font-size: 16px !important; }
+nav .text-lg { font-size: 18px !important; }
+nav .text-xl { font-size: 20px !important; }
+nav .text-2xl { font-size: 24px !important; }
+nav .w-5, nav .h-5 { width: 20px !important; height: 20px !important; }
+nav .w-6, nav .h-6 { width: 24px !important; height: 24px !important; }
+
+/* Sidebar font and icon size increases for high visibility */
+aside {
+  font-size: 23px !important;
+}
+aside .text-xs { font-size: 17px !important; }
+aside .text-sm { font-size: 21px !important; }
+aside .text-base { font-size: 23px !important; }
+aside .text-lg { font-size: 25px !important; }
+aside .text-xl { font-size: 28px !important; }
+aside .text-2xl { font-size: 32px !important; }
+aside .w-5, aside .h-5 {
+  width: 28px !important;
+  height: 28px !important;
+}
+aside .w-6, aside .h-6 {
+  width: 32px !important;
+  height: 32px !important;
+}
+
+/* Make main content headings larger (excluding print document headers) */
+main h1:not(.nmpa-official-header *):not(.print-container *), 
+main .text-3xl, 
+main .text-4xl {
+  font-size: 2.35rem !important;
+}
+
+main h2:not(.nmpa-official-header *):not(.print-container *), 
+main .text-2xl {
+  font-size: 1.85rem !important;
+}
+
+main h3:not(.nmpa-official-header *):not(.print-container *), 
+main .text-xl {
+  font-size: 1.45rem !important;
+}
+
+main h4:not(.nmpa-official-header *):not(.print-container *), 
+main .text-lg {
+  font-size: 1.25rem !important;
+}
+
+main strong, main .font-bold {
+  font-weight: 800 !important;
 }

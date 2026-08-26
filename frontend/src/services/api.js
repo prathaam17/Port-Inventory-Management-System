@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api',
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json'
@@ -22,7 +22,7 @@ API.interceptors.request.use(
   }
 );
 
-// Global response error handler (auto-logout on expired token)
+// Global response error handler (auto-logout on expired token, timeout normalization)
 API.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -30,11 +30,11 @@ API.interceptors.response.use(
       console.warn('Unauthorized request. Logging user out...');
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      // Only redirect if we aren't already on login page to avoid cycles
-      if (!window.location.hash.includes('/login') && !window.location.pathname.includes('/login')) {
-        const base = window.location.pathname.endsWith('/') ? window.location.pathname : window.location.pathname + '/';
-        window.location.href = base + '#/login?expired=true';
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login?expired=true';
       }
+    } else if (error.code === 'ECONNABORTED' || !error.response) {
+      console.error('PIMS API Server connection failure or timeout.');
     }
     return Promise.reject(error);
   }

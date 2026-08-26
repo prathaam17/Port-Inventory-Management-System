@@ -4,22 +4,26 @@ const { User, Role } = require('../models');
 const { JWT_SECRET } = require('../middleware/auth');
 const { logActivity } = require('../utils/logger');
 
+const { Op } = require('sequelize');
+
 // Login User
 exports.login = async (req, res) => {
   const { username, password } = req.body;
 
   try {
     if (!username || !password) {
-      return res.status(400).json({ message: 'Username and password are required.' });
+      return res.status(400).json({ message: 'Email/Username and password are required.' });
     }
 
     const user = await User.findOne({
-      where: { username },
+      where: {
+        [Op.or]: [{ username }, { email: username }]
+      },
       include: [{ model: Role }]
     });
 
     if (!user) {
-      return res.status(401).json({ message: 'Invalid username or password.' });
+      return res.status(401).json({ message: 'Invalid email or password.' });
     }
 
     if (user.status !== 'active') {
@@ -35,7 +39,8 @@ exports.login = async (req, res) => {
       id: user.id,
       username: user.username,
       email: user.email,
-      role: user.Role.name
+      role: user.Role ? user.Role.name : 'User',
+      pdaBalance: user.pdaBalance
     };
 
     const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '8h' });
@@ -68,8 +73,9 @@ exports.getCurrentUser = async (req, res) => {
       id: user.id,
       username: user.username,
       email: user.email,
-      role: user.Role.name,
-      status: user.status
+      role: user.Role ? user.Role.name : 'User',
+      status: user.status,
+      pdaBalance: user.pdaBalance
     });
   } catch (error) {
     console.error('Get user details error:', error);

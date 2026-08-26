@@ -1,0 +1,228 @@
+================================================================================
+          NMPA PORT INVENTORY MANAGEMENT SYSTEM (PIMS)
+    PROJECT PURPOSE, USE CASES, TECHNICAL SPECIFICATION & FEATURES
+================================================================================
+
+--------------------------------------------------------------------------------
+1. WHY THE PROJECT WAS IMPLEMENTED (PROBLEM STATEMENT & MOTIVATION)
+--------------------------------------------------------------------------------
+
+1.1 Elimination of Port Congestion & Vessel Delays
+    - Traditional port operations heavily relied on manual paper logs, phone calls,
+      and fragmented spreadsheets to handle vessel arrivals, berthing schedules,
+      and cargo unloading.
+    - This project was implemented to digitize and automate the maritime lifecycle,
+      reducing vessel turnaround time at berths and eliminating port queue congestion.
+
+1.2 Prevention of Revenue Leakage & Manual Billing Errors
+    - Port tariffs under the Scale of Rates (SOR) involve complex rules: berth hire
+      per hour based on GRT/NRT, free storage grace days, hazardous cargo surcharges,
+      reefer power fees, and escalating demurrage penalties.
+    - Calculating these charges manually led to revenue leakage, missed demurrage
+      penalties, and delayed invoice collection. PIMS was implemented to automate
+      tariff calculation with zero human error.
+
+1.3 Real-Time Yard Inventory & Weighbridge Discrepancies
+    - Physical inventory in bulk yards (coal, iron ore, grains) often diverged from
+      book inventory recorded in office systems.
+    - PIMS provides an ACID-compliant dual-ledger system linking weighbridge tare/gross
+      scale measurements directly with yard storage slot assignments and physical
+      survey reconciliation logs.
+
+1.4 Paperless Customs Clearance & Gate Security
+    - Unauthorized cargo evacuation or manual paper customs gate passes caused severe
+      security vulnerabilities and long queues of haulage trucks at port gates.
+    - PIMS enforces digital Customs Holds and Gate Pass validation, ensuring no vehicle
+      can evacuate cargo until customs clearance and payment receipts are verified.
+
+1.5 Unified Platform for Multi-Departmental Collaboration
+    - Shipping agents, harbor masters, stevedores, customs officers, yard managers,
+      and billing accountants historically operated in disconnected silos.
+    - PIMS unifies all stakeholders into a single role-based web application with
+      real-time WebSocket updates.
+
+
+--------------------------------------------------------------------------------
+2. WHAT IS THE USE OF IT (CORE USE CASES & BUSINESS VALUE)
+--------------------------------------------------------------------------------
+
+2.1 End-to-End Maritime Call Lifecycle Management
+    - Use: Shipping agents apply for Vessel Call Numbers (VCN), declare Import General
+      Manifests (IGM), and file FAL declarations online prior to ship arrival.
+    - Benefit: Eliminates physical document submission at port offices; enables pre-arrival
+      berth planning.
+
+2.2 Intelligent Berth Allocation & Stevedoring Tallying
+    - Use: Harbor masters assign incoming ships to available berths using an interactive
+      berth grid and track discharge tallies in real-time as cargo is unloaded.
+    - Benefit: Maximizes berth utilization, tracks unloader productivity, and records
+      Statement of Fact (SOF) timestamps for demurrage auditing.
+
+2.3 Dynamic Yard Space & Hazard Management
+    - Use: Yard managers allocate specific slots (Bulk Yards, Container Grids, Reefer
+      Points) and monitor zone occupancy percentages while enforcing IMDG hazard rules.
+    - Benefit: Prevents yard over-capacity, optimizes stack layouts, and ensures dangerous
+      goods safety compliance.
+
+2.4 Automated Demurrage & Scale of Rates (SOR) Billing Engine
+    - Use: System continuously monitors cargo storage duration, applies free grace days,
+      and automatically computes demurrage penalties, wharfage, and berth hire charges.
+    - Benefit: Guarantees 100% accurate billing, enables pre-paid Personal Deposit (PD)
+      account auto-deductions, and produces instant downloadable Word/PDF invoices.
+
+2.5 Integrated Customs Hold & Digital Gate Evacuation
+    - Use: Customs officers inspect cargo online, apply or release customs holds, and
+      generate digital gate passes for gate security officers at weighbridges.
+    - Benefit: Prevents illegal cargo removal, streamlines truck entry/exit speed, and
+      maintains complete regulatory auditability.
+
+2.6 Regulatory Audit & Financial Governance
+    - Use: System logs every weight override, customs hold change, user login, and invoice
+      adjustment into an immutable audit trail.
+    - Benefit: Ensures full financial transparency, simplifies annual port authority audits,
+      and prevents unauthorized operational tampering.
+
+
+--------------------------------------------------------------------------------
+3. PROGRAMMING LANGUAGES USED & LOCATION BREAKDOWN
+--------------------------------------------------------------------------------
+
+3.1 JAVASCRIPT (Node.js & React ES6+)
+    - Where Used: 
+      * Backend REST API (`/backend/`): Node.js + Express.js framework.
+      * Frontend UI (`/frontend/src/`): React 19 Single Page Application (SPA).
+    - Purpose & Features:
+      * Server-side API endpoints (`/backend/routes/*.js`, `/backend/controllers/*.js`).
+      * Database ORM mapping via Sequelize (`/backend/models/*.js`).
+      * JWT Authentication, Password Hashing (`bcryptjs`), Role-Based Access Control (`middleware/auth.js`).
+      * Real-Time WebSocket server using Socket.IO (`/backend/server.js`).
+      * File Upload handling with Multer and Word Document (.docx) invoice generation with `docx`.
+      * Seed scripts (`seed.js`, `seed_demo_scenarios.js`, `reset_database.js`).
+      * Interactive React state management, hooks, page view rendering (`/frontend/src/pages/*.jsx`), and dynamic UI charts (`recharts`).
+
+3.2 PYTHON (Python 3.10+)
+    - Where Used:
+      * Standalone Ledger Microservice (`/python_pims/`).
+    - Purpose & Features:
+      * FastAPI framework (`main.py`) for high-performance asynchronous API endpoints.
+      * SQLAlchemy ORM (`database.py`, `models.py`) for direct relational database ledger interactions.
+      * Strict schema validation using Pydantic (`schemas.py`).
+      * Asynchronous background job scheduler using APScheduler (`scheduler.py`) to automate free-time expiry monitoring and demurrage billing checks.
+      * High-throughput ledger calculation engine (`service.py`) for weighbridge tracking (gross/tare/net weight), stevedoring tallies, yard slot assignment, and gate evacuation checks.
+
+3.3 SQL (Structured Query Language)
+    - Where Used:
+      * PostgreSQL Relational Database (`port_inventory`).
+    - Purpose & Features:
+      * Relational schema structure for 28 database entities.
+      * Table relations, primary keys, foreign keys, index optimization, constraints, and ACID-compliant transaction execution.
+      * Dialect-level query generation managed via Sequelize (Node.js) and SQLAlchemy (Python).
+
+3.4 HTML5 (HyperText Markup Language)
+    - Where Used:
+      * Single Page Application entry template (`/frontend/index.html`).
+    - Purpose & Features:
+      * Root DOM mount element (`<div id="root"></div>`), semantic document head structure, Google Fonts preloading, and meta tags for responsive layout design.
+
+3.5 CSS3 / PostCSS (Cascading Style Sheets & Utility Classes)
+    - Where Used:
+      * Styling configuration and CSS stylesheet (`/frontend/src/index.css`, `/frontend/postcss.config.cjs`).
+    - Purpose & Features:
+      * Tailwind CSS v4 styling rules, design tokens, color variables, dark-mode styling, glassmorphism UI backdrop effects, responsive flexbox/grid containers, and micro-animations.
+
+
+--------------------------------------------------------------------------------
+4. TECHNICAL ARCHITECTURE & SYSTEM DESIGN
+--------------------------------------------------------------------------------
+
+4.1 SYSTEM TOPOLOGY
+    [ PostgreSQL Database ] (Port 5432 - Central Data Store)
+            ^                                     ^
+            |                                     |
+    [ Node.js/Express Backend ] (Port 5000) <---> [ Python FastAPI Ledger ] (Port 8000)
+            ^                                     ^
+            \                                     /
+             \--- [ React / Vite Frontend ] ------/ (Port 5173 - Port Operations Dashboard)
+
+4.2 BACKEND MICROSERVICES & DUAL-ENGINE HARMONY
+    - Node.js Core Backend (Express.js): Handles user authentication, RBAC, document management, master data configuration, shipping agent declarations, invoice issuance, and WebSocket broadcast messaging.
+    - Python Ledger Service (FastAPI): Acts as a specialized financial and inventory ledger microservice, providing high-precision calculation of demurrage rent, berth stay duration, gate pass validation, and weighbridge weight reconciliations.
+
+4.3 REAL-TIME WEBSOCKET COMMUNICATOR
+    - Socket.IO server running on Node.js automatically emits live updates to connected front-end clients whenever critical state changes occur (e.g., Vessel Berthing, Customs Hold applied/released, Gate Evacuation completed, Inventory variance reconciled).
+
+
+--------------------------------------------------------------------------------
+5. ADVANCED TECHNICAL ASPECTS & CAPABILITIES
+--------------------------------------------------------------------------------
+
+5.1 Scale of Rates (SOR) Automated Billing Engine
+    - Dynamic calculation of berth hire, anchorage charges, storage rent, demurrage penal fees, reefer monitoring charges, and hazardous cargo surcharges.
+    - Built-in free period grace day calculations with automated tariff escalations after grace period expiration.
+
+5.2 ACID-Compliant Dual Inventory & Tally Ledger
+    - Double-entry physical vs. book inventory reconciliation.
+    - Weighbridge Gross / Tare / Net weight tracking for bulk cargo (e.g., Coal, Iron Ore).
+    - Stevedoring tally logging for breakbulk and container units.
+
+5.3 Multi-Tier Security & Governance
+    - JSON Web Tokens (JWT) signed with secret key for stateless session verification.
+    - Role-Based Access Control (RBAC) restricting UI portals and API endpoints by user role:
+      * Port Administrator
+      * Shipping Agent
+      * Operations Officer / Harbor Master
+      * Customs Officer
+      * Billing Officer
+      * Gate / Yard Officer
+    - Immutable Audit Logging (`AuditLog` table) recording user actions, IP addresses, timestamped state changes, and override justifications.
+
+5.4 Automated Background Cron Jobs
+    - APScheduler integration in Python inspects active yard inventory every 24 hours, identifies items exceeding free storage days, and auto-generates demurrage audit flags.
+
+5.5 Live Document & File Handling
+    - Word Document Generation (`docx` library) creates official formatted invoices and berth certificates on demand.
+    - File storage engine supporting PDF/Image manifest file uploads for vessel declarations and shipping agent registration documentation.
+
+
+--------------------------------------------------------------------------------
+6. MODULE-BY-MODULE FEATURE OVERVIEW
+--------------------------------------------------------------------------------
+
+6.1 Shipping Agent Portal (`ShippingAgentPortal.jsx`)
+    - Agent Onboarding & Registration workflow with document submission.
+    - Vessel Call Number (VCN) application for incoming vessels.
+    - Import General Manifest (IGM) declaration detailing cargo line items, container numbers, weight metric, and consignee data.
+    - FAL (Facilitation of International Maritime Traffic) declarations.
+
+6.2 Operations & Harbor Master Portal (`OperationsPortal.jsx`)
+    - Interactive Berth Allocation Grid for assigning ships to berths (e.g., Berth 01 to Berth 08).
+    - First Line Ashore / Berthing status tracking.
+    - Discharge Tally recording cargo unloader progress against manifested quantities.
+    - Statement of Fact (SOF) timeline logging key port call timestamps (E.T.A, Arrival, Berthing, Commenced Discharge, Completed Discharge, Unberth).
+
+6.3 Cargo & Yard Inventory Management (`CargoInventory.jsx`)
+    - Real-time Yard Zone Matrix & Capacity Tracker (e.g., Bulk Coal Yard, Container Grid, Cold Storage / Reefer Zone).
+    - Hazardous Cargo Isolation tracking with IMDG hazard class compliance.
+    - Inventory Adjustment & Physical Survey Variance Reconciliation with audit trail logged reasonings.
+    - Reefer Temperature and Monitoring log tracking.
+
+6.4 Customs Clearance & Port Security (`CustomsClearance.jsx`)
+    - Customs Officer Inspection Portal.
+    - One-click Customs Hold & Release toggle controls.
+    - Physical Inspection log entry.
+    - Automated Gate Pass generation for cargo clearance upon tax/duty verification.
+
+6.5 Billing, Invoicing & PD Accounts (`Billing.jsx`)
+    - Automated Invoice Generation based on vessel call duration, berth hire tariffs, and demurrage calculations.
+    - Personal Deposit (PD) Account ledger balance management (Pre-paid account balances for shipping lines).
+    - Payment receipt logging and Word document invoice downloading.
+    - Scale of Rates (SOR) Tariff Rule editor for updating port charges.
+
+6.6 User Management & Admin Console (`UserManagement.jsx`)
+    - User creation, password resets, role updates, and system activation/deactivation.
+    - Complete system audit log inspector with timestamped action tracking.
+
+
+================================================================================
+                 END OF TECHNICAL SPECIFICATION & FEATURE GUIDE
+================================================================================

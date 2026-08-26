@@ -6,6 +6,11 @@ import {
   ResponsiveContainer, 
   BarChart, 
   Bar, 
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
   XAxis, 
   YAxis, 
   CartesianGrid, 
@@ -192,7 +197,7 @@ const Reports = () => {
 
       </div>
 
-      {/* Chart Panel */}
+      {/* Chart Panel 1: Revenue Comparison */}
       <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-lg border border-slate-100 dark:border-slate-800/80 glass-panel no-print">
         <div className="flex justify-between items-center mb-6">
           <div>
@@ -217,6 +222,81 @@ const Reports = () => {
             </ResponsiveContainer>
           )}
         </div>
+      </div>
+
+      {/* Chart Panel 2: Import vs Export Volume & Dwell Time Distribution */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 no-print">
+        
+        {/* Trade Volume */}
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-lg border border-slate-100 dark:border-slate-800/80 glass-panel">
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <h3 className="font-bold text-base text-slate-800 dark:text-white">Import vs Export Cargo Tonnage (Tons)</h3>
+              <p className="text-xs text-slate-400 mt-0.5">Volume comparison by cargo classification category</p>
+            </div>
+            <TrendingUp className="w-5 h-5 text-sky-500" />
+          </div>
+          <div className="h-60 w-full text-xs">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={[
+                { category: 'Containers', Import: 4200, Export: 6100 },
+                { category: 'Liquid Bulk', Import: 8500, Export: 3200 },
+                { category: 'Dry Bulk', Import: 12400, Export: 9800 },
+                { category: 'General Cargo', Import: 3100, Export: 4500 }
+              ]}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.15} />
+                <XAxis dataKey="category" stroke="#64748b" />
+                <YAxis stroke="#64748b" />
+                <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '12px', color: 'white' }} />
+                <Legend />
+                <Bar dataKey="Import" fill="#0284c7" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Export" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Cargo Dwell Time Breakdown */}
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-lg border border-slate-100 dark:border-slate-800/80 glass-panel">
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <h3 className="font-bold text-base text-slate-800 dark:text-white">Cargo Dwell Time Distribution</h3>
+              <p className="text-xs text-slate-400 mt-0.5">Storage duration in transit yard plots</p>
+            </div>
+            <Clock className="w-5 h-5 text-amber-500" />
+          </div>
+          <div className="h-60 w-full flex items-center justify-center">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie 
+                  data={[
+                    { name: '0-3 Days (Free)', value: 65, fill: '#10b981' },
+                    { name: '4-7 Days (Tier 1)', value: 22, fill: '#f59e0b' },
+                    { name: '8-14 Days (Tier 2)', value: 9, fill: '#ef4444' },
+                    { name: '15+ Days (Severe)', value: 4, fill: '#8b5cf6' }
+                  ]} 
+                  dataKey="value" 
+                  nameKey="name" 
+                  cx="50%" 
+                  cy="50%" 
+                  outerRadius={75} 
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                >
+                  {[
+                    { name: '0-3 Days (Free)', value: 65, fill: '#10b981' },
+                    { name: '4-7 Days (Tier 1)', value: 22, fill: '#f59e0b' },
+                    { name: '8-14 Days (Tier 2)', value: 9, fill: '#ef4444' },
+                    { name: '15+ Days (Severe)', value: 4, fill: '#8b5cf6' }
+                  ].map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Pie>
+                <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '12px', color: 'white' }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
       </div>
 
       {/* Row 3: Super Admin Audit Log Directory */}

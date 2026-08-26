@@ -14,10 +14,12 @@ const DashboardLayout = () => {
     <div className="min-h-screen bg-slate-50 text-slate-800 transition-colors duration-200">
       <Navbar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
       <Sidebar isOpen={isSidebarOpen} />
-      <main className={`pt-36 pb-8 px-4 sm:px-6 transition-all duration-300 min-h-screen
-        ${isSidebarOpen ? 'lg:pl-72 pl-4' : 'pl-24'}
-      `}>
-        <div className="max-w-7xl mx-auto">
+      <main 
+        className={`pt-36 pb-8 px-4 sm:px-6 transition-all duration-300 min-h-screen ${
+          isSidebarOpen ? 'md:pl-[310px] pl-4' : 'md:pl-[64px] pl-4'
+        }`}
+      >
+        <div className="w-full mx-auto">
           <Outlet />
         </div>
       </main>

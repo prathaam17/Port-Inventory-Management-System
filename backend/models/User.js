@@ -3,9 +3,10 @@ const sequelize = require('../config/db');
 
 const User = sequelize.define('User', {
   id: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
     primaryKey: true,
-    autoIncrement: true
+    field: 'user_id'
   },
   username: {
     type: DataTypes.STRING,
@@ -26,6 +27,14 @@ const User = sequelize.define('User', {
   status: {
     type: DataTypes.STRING,
     defaultValue: 'active' // active, inactive
+  },
+  department: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  pdaBalance: {
+    type: DataTypes.DOUBLE,
+    defaultValue: 0.0
   }
 }, {
   timestamps: true

@@ -3,22 +3,50 @@ const sequelize = require('../config/db');
 
 const Cargo = sequelize.define('Cargo', {
   id: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
     primaryKey: true,
-    autoIncrement: true
+    field: 'cargo_id'
   },
   cargoId: {
     type: DataTypes.STRING,
     allowNull: false,
     unique: true
   },
+  vesselId: {
+    type: DataTypes.UUID,
+    allowNull: true,
+    field: 'vessel_id'
+  },
+  manifestNumber: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'manifest_number'
+  },
   vesselName: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  sealNumber: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  volume: {
+    type: DataTypes.DOUBLE,
+    allowNull: true
+  },
+  shipper: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  notifyParty: {
     type: DataTypes.STRING,
     allowNull: true
   },
   cargoType: {
     type: DataTypes.STRING, // Container, Bulk, Liquid, Break Bulk
-    allowNull: false
+    allowNull: false,
+    field: 'cargo_type'
   },
   quantity: {
     type: DataTypes.INTEGER,
@@ -27,12 +55,19 @@ const Cargo = sequelize.define('Cargo', {
   },
   weight: {
     type: DataTypes.DOUBLE, // Weight in metric tons
-    allowNull: false
+    allowNull: false,
+    field: 'weight_mats'
+  },
+  hazmatClass: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'hazardous_class'
   },
   status: {
-    type: DataTypes.STRING, // Manifest Uploaded, Unloaded, Allocated, Customs Hold, Customs Approved, Gate Pass Generated, Dispatched
+    type: DataTypes.STRING, // MANIFESTED, YARD_STAGED, CUSTOMS_HOLD, RELEASE_READY, GATE_OUT
     allowNull: false,
-    defaultValue: 'Manifest Uploaded'
+    defaultValue: 'MANIFESTED',
+    field: 'current_status'
   },
   consignee: {
     type: DataTypes.STRING,
@@ -56,9 +91,45 @@ const Cargo = sequelize.define('Cargo', {
   },
   containerNo: {
     type: DataTypes.STRING,
-    allowNull: true
+    allowNull: true,
+    unique: true,
+    field: 'identifier_code'
   },
   destination: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  entryTime: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    defaultValue: DataTypes.NOW
+  },
+  dischargeCompletionDate: {
+    type: DataTypes.DATE,
+    allowNull: true
+  },
+  uomType: {
+    type: DataTypes.ENUM('MTDA', 'CMDA', 'UTDA'),
+    allowNull: false,
+    defaultValue: 'MTDA'
+  },
+  uomQuantity: {
+    type: DataTypes.DOUBLE,
+    allowNull: true
+  },
+  isGovernmentDetained: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
+  governmentHoldReason: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  shutOutStatus: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
+  billOfLading: {
     type: DataTypes.STRING,
     allowNull: true
   },
@@ -67,16 +138,28 @@ const Cargo = sequelize.define('Cargo', {
     allowNull: true,
     defaultValue: 'Import'
   },
-  billOfLading: {
-    type: DataTypes.STRING,
-    allowNull: true
-  },
   shippingBill: {
     type: DataTypes.STRING,
     allowNull: true
   },
   deliveryOrderNo: {
     type: DataTypes.STRING,
+    allowNull: true
+  },
+  customsHoldStatus: {
+    type: DataTypes.STRING,
+    defaultValue: 'LOCKED' // LOCKED, RELEASED, SEIZED
+  },
+  financeClearanceStatus: {
+    type: DataTypes.STRING,
+    defaultValue: 'LOCKED' // LOCKED, RELEASED
+  },
+  oocRefNo: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  oocDate: {
+    type: DataTypes.DATE,
     allowNull: true
   },
   digitalSignature: {
@@ -90,9 +173,54 @@ const Cargo = sequelize.define('Cargo', {
   exitTime: {
     type: DataTypes.DATE,
     allowNull: true
+  },
+  cifValue: {
+    type: DataTypes.DOUBLE,
+    allowNull: true
+  },
+  fobValue: {
+    type: DataTypes.DOUBLE,
+    allowNull: true
+  },
+  coastalGoodsValue: {
+    type: DataTypes.DOUBLE,
+    allowNull: true
+  },
+  originType: {
+    type: DataTypes.STRING,
+    defaultValue: 'Foreign',
+    allowNull: false
+  },
+  commodityType: {
+    type: DataTypes.STRING,
+    defaultValue: 'General',
+    allowNull: false
+  },
+  containerLength: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
+  isUsdDenominated: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
+  exchangeRate: {
+    type: DataTypes.DOUBLE,
+    allowNull: true
+  },
+  exchangeRateDate: {
+    type: DataTypes.DATE,
+    allowNull: true
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  tableName: 'CargoItems',
+  indexes: [
+    {
+      unique: false,
+      fields: ['billOfLading', 'vesselName']
+    }
+  ]
 });
 
 module.exports = Cargo;

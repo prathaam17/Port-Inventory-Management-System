@@ -11,6 +11,22 @@ const YardLocation = sequelize.define('YardLocation', {
     type: DataTypes.STRING, // e.g. Zone-A, Bay-3, Rack-12
     allowNull: false
   },
+  row: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  column: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  tier: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  slot: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
   capacity: {
     type: DataTypes.DOUBLE,
     allowNull: false

@@ -1,5 +1,5 @@
 import React from 'react';
-import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 
@@ -13,14 +13,14 @@ import ProtectedRoute from './routes/ProtectedRoute';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import CargoInventory from './pages/CargoInventory';
-import WarehouseManagement from './pages/WarehouseManagement';
 import CustomsClearance from './pages/CustomsClearance';
-import GateOperations from './pages/GateOperations';
 import Billing from './pages/Billing';
 import Reports from './pages/Reports';
 import UserManagement from './pages/UserManagement';
 import Settings from './pages/Settings';
 import ShippingAgentPortal from './pages/ShippingAgentPortal';
+import OperationsPortal from './pages/OperationsPortal';
+import ShippingAgentRegistration from './pages/ShippingAgentRegistration';
 
 function App() {
   return (
@@ -31,6 +31,7 @@ function App() {
               
               {/* Authenticated portal entry */}
               <Route path="/login" element={<Login />} />
+              <Route path="/register-agent" element={<ShippingAgentRegistration />} />
 
               {/* Secure Admin Dashboard Layout Wrapper */}
               <Route 
@@ -48,7 +49,7 @@ function App() {
                 <Route 
                   path="cargo" 
                   element={
-                    <ProtectedRoute allowedRoles={['Super Admin', 'Port Operations Officer', 'Warehouse Manager', 'Shipping Agent']}>
+                    <ProtectedRoute allowedRoles={['Super Admin', 'Port Operations Officer', 'Warehouse Manager']}>
                       <CargoInventory />
                     </ProtectedRoute>
                   } 
@@ -58,8 +59,16 @@ function App() {
                 <Route 
                   path="warehouse" 
                   element={
-                    <ProtectedRoute allowedRoles={['Super Admin', 'Warehouse Manager']}>
-                      <WarehouseManagement />
+                    <ProtectedRoute allowedRoles={['Super Admin', 'Warehouse Manager', 'Port Operations Officer']}>
+                      <OperationsPortal />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="operations-portal" 
+                  element={
+                    <ProtectedRoute allowedRoles={['Super Admin', 'Warehouse Manager', 'Port Operations Officer']}>
+                      <OperationsPortal />
                     </ProtectedRoute>
                   } 
                 />
@@ -68,27 +77,18 @@ function App() {
                 <Route 
                   path="customs" 
                   element={
-                    <ProtectedRoute allowedRoles={['Super Admin', 'Customs Officer', 'Shipping Agent']}>
+                    <ProtectedRoute allowedRoles={['Super Admin', 'Customs Officer']}>
                       <CustomsClearance />
                     </ProtectedRoute>
                   } 
                 />
 
-                {/* Gate entry-exit and truck logs */}
-                <Route 
-                  path="gate" 
-                  element={
-                    <ProtectedRoute allowedRoles={['Super Admin', 'Gate Officer', 'Shipping Agent']}>
-                      <GateOperations />
-                    </ProtectedRoute>
-                  } 
-                />
 
                 {/* Invoicing, storage fee demurrage */}
                 <Route 
                   path="billing" 
                   element={
-                    <ProtectedRoute allowedRoles={['Super Admin', 'Finance', 'Shipping Agent']}>
+                    <ProtectedRoute allowedRoles={['Super Admin', 'Finance', 'Finance Officer']}>
                       <Billing />
                     </ProtectedRoute>
                   } 
@@ -98,7 +98,7 @@ function App() {
                 <Route 
                   path="reports" 
                   element={
-                    <ProtectedRoute allowedRoles={['Super Admin', 'Warehouse Manager', 'Customs Officer', 'Gate Officer', 'Finance', 'Shipping Agent']}>
+                    <ProtectedRoute allowedRoles={['Super Admin', 'Warehouse Manager', 'Customs Officer', 'Finance', 'Finance Officer', 'Port Operations Officer', 'Management']}>
                       <Reports />
                     </ProtectedRoute>
                   } 
@@ -124,11 +124,15 @@ function App() {
                   } 
                 />
 
+                {/* Redirects for underscore URLs */}
+                <Route path="operations_portal" element={<Navigate to="/operations-portal" replace />} />
+                <Route path="shipping_portal" element={<Navigate to="/shipping-portal" replace />} />
+
                 {/* Settings Configurations */}
                 <Route 
                   path="settings" 
                   element={
-                    <ProtectedRoute allowedRoles={['Super Admin', 'Port Operations Officer', 'Warehouse Manager', 'Customs Officer', 'Gate Officer', 'Finance', 'Shipping Agent']}>
+                    <ProtectedRoute allowedRoles={['Super Admin']}>
                       <Settings />
                     </ProtectedRoute>
                   } 

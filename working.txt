@@ -1,0 +1,300 @@
+================================================================================
+          NMPA PORT INVENTORY MANAGEMENT SYSTEM (PIMS)
+              COMPLETE WORKING TUTORIAL & MODULE GUIDE
+================================================================================
+
+This document provides a clear, step-by-step workflow on how to set up, establish,
+run, and operate all components of the Port Inventory Management System (PIMS),
+along with a detailed module-by-module feature guide explaining how each part works
+and why it is useful.
+
+
+================================================================================
+PART 1: ARCHITECTURE & SYSTEM OVERVIEW
+================================================================================
+
+The system consists of 4 core components:
+
+  [ PostgreSQL Database ]  <--->  [ Node.js / Express Backend ] (Port 5000)
+             ^                                     ^
+             |                                     |
+  [ Python FastAPI Ledger ] (Port 8000) <---> [ React / Vite Frontend ] (Port 5173)
+
+1. PostgreSQL Database (`port_inventory`): Relational storage for users, roles, vessels, manifests, cargo, warehouse locations, invoices, and audit logs.
+2. Backend (`/backend`): Node.js + Express + Sequelize + Socket.IO REST & WebSocket API. Manages auth, RBAC, business logic, document upload, and real-time updates.
+3. Python PIMS Ledger (`/python_pims`): Python + FastAPI + SQLAlchemy + APScheduler. High-performance, ACID-compliant ledger for weighbridge tracking, stevedoring tally, automated demurrage calculations, and background cron schedules.
+4. Frontend (`/frontend`): React + Vite + TailwindCSS + Lucide Icons + Recharts. Modern, responsive dashboard interface tailored for each port department.
+
+
+================================================================================
+PART 2: PREREQUISITES
+================================================================================
+Ensure the following tools are installed on your machine:
+  - Node.js (v18 or higher) & npm
+  - Python (v3.10 or higher) & pip
+  - PostgreSQL Database Server (v13 or higher)
+
+
+================================================================================
+PART 3: STEP-BY-STEP SETUP & RUNNING WORKFLOW
+================================================================================
+
+STEP 1: DATABASE INITIALIZATION (PostgreSQL)
+--------------------------------------------
+1. Start your PostgreSQL service.
+2. Create the project database named `port_inventory`:
+   CREATE DATABASE port_inventory;
+
+3. Verify connection credentials in `backend/.env` and `python_pims/database.py`:
+   - Host: localhost
+   - Port: 5432
+   - Database: port_inventory
+   - User: postgres
+   - Password: postgres
+
+
+STEP 2: BACKEND SETUP & RUNNING (Node.js / Express)
+---------------------------------------------------
+Location: `/backend` folder
+
+1. Open a terminal and navigate to the backend directory:
+   cd backend
+
+2. Check environment variables in `backend/.env`:
+   PORT=5000
+   DB_DIALECT=postgres
+   DB_HOST=localhost
+   DB_PORT=5432
+   DB_NAME=port_inventory
+   DB_USER=postgres
+   DB_PASSWORD=postgres
+   JWT_SECRET=nmpa_super_secret_key_2026
+
+3. Install dependencies:
+   npm install
+
+4. Seed initial database tables, roles, default system users, and warehouses:
+   npm run seed
+
+5. Start the backend server:
+   npm run dev   (or: npm start)
+
+   -> Server URL: http://localhost:5000
+
+
+STEP 3: PYTHON PIMS LEDGER SETUP & RUNNING (FastAPI)
+---------------------------------------------------
+Location: `/python_pims` folder
+
+1. Open a NEW terminal window and navigate to the python_pims directory:
+   cd python_pims
+
+2. Install Python dependencies:
+   pip install fastapi uvicorn sqlalchemy psycopg2-binary pydantic apscheduler
+
+3. Start the FastAPI server:
+   python -m uvicorn main:app --reload --port 8000
+
+   -> Server URL: http://localhost:8000
+   -> Swagger UI Docs: http://localhost:8000/docs
+
+4. (Optional) Seed PIMS Yard Capacities:
+   Send a POST request to http://localhost:8000/seed-capacity
+
+
+STEP 4: FRONTEND SETUP & RUNNING (React + Vite)
+-----------------------------------------------
+Location: `/frontend` folder
+
+1. Open another NEW terminal window and navigate to the frontend directory:
+   cd frontend
+
+2. Install dependencies:
+   npm install
+
+3. Start the Vite development server:
+   npm run dev
+
+   -> Frontend App: http://localhost:5173
+
+
+================================================================================
+PART 4: SUMMARY OF RUNNING SERVICES
+================================================================================
+Service                URL / Endpoint           Terminal Command
+--------------------------------------------------------------------------------
+PostgreSQL DB          localhost:5432           Started via system service
+Backend API            http://localhost:5000    cd backend && npm run dev
+Python PIMS Ledger     http://localhost:8000    cd python_pims && uvicorn main:app --reload --port 8000
+Frontend UI            http://localhost:5173    cd frontend && npm run dev
+FastAPI Swagger Docs   http://localhost:8000/docs (Open in Web Browser)
+
+
+================================================================================
+PART 5: DEFAULT DEMO LOGIN CREDENTIALS
+================================================================================
+Password for ALL default accounts: password123
+
+Username      Role                       Email
+--------------------------------------------------------------------------------
+admin         Super Admin                admin@nmpa.gov.in
+ops           Port Operations Officer    ops@nmpa.gov.in
+warehouse     Warehouse Manager          warehouse@nmpa.gov.in
+customs       Customs Officer            customs@icegate.gov.in
+shipping      Shipping Agent             agent@ssl-lines.com
+finance       Finance                    finance@nmpa.gov.in
+
+
+================================================================================
+PART 6: HOW THE SYSTEM IS USEFUL (BUSINESS VALUE & WORKFLOW)
+================================================================================
+
+Why PIMS is essential for Port Operations:
+------------------------------------------
+1. Paperless & Real-Time Coordination: Eliminates physical paperwork between 
+   shipping lines, terminal operators, customs officials, and billing departments.
+2. Vessel Turnaround Optimization: Reduces waiting time at anchorage by 
+   streamlining berth allocation, gang assignment, and pilotage scheduling.
+3. Automated Storage & Demurrage Billing: Automatically applies Schedule of 
+   Rates (SOR) tariffs, calculates free days, and enforces penalty slabs to prevent 
+   revenue leakage.
+4. Compliance & Auditability: Every cargo discharge, inventory transfer, and 
+   customs clearance status change is recorded in an immutable audit trail.
+5. PDA Account Control: Ensures shipping agents maintain sufficient funds in 
+   their Personal Deposit Accounts before services or vessel berthing are authorized.
+
+
+================================================================================
+PART 7: DETAILED MODULE-BY-MODULE FUNCTIONALITY & WORKING
+================================================================================
+
+1. DASHBOARD MODULE
+-------------------
+• How it Works:
+  Serves as the central command center for port management. It aggregates live metrics 
+  from PostgreSQL and WebSocket feeds.
+• Key Features Present:
+  - Real-Time Occupancy Cards: Total berth utilization, open yard capacity %, transit shed occupancy.
+  - Active Vessel Call Summary: Number of vessels currently at berth, waiting at anchorage, and expected ETAs.
+  - Quick Action Shortcuts: Direct navigation to vessel registration, berth scheduling, and manifest filing.
+  - Real-Time Activity Feed: Live updates when vessels berth, manifests are uploaded, or customs clearances are approved.
+
+
+2. PORT OPERATIONS PORTAL (Used by: Port Operations Officer)
+------------------------------------------------------------
+• How it Works:
+  Manages the entire life cycle of a vessel call from pre-arrival notification to departure.
+• Key Features Present:
+  - Vessel Call Management: Allocate unique Vessel Call Numbers (VCN), review vessel draft/beam specifications, track ETA/ETD.
+  - Berth Allocation Matrix: Interactive berth assignment matching vessel draught with berth depth limits.
+  - Statement of Fact (SOF) Log: Timestamp logger for maritime events (First Line Ashore, All Fast, Gang On Board, Commenced Discharge, Completed Discharge, Pilot On Board, Unberthed).
+  - Stevedoring & Tally Operations: Real-time logging of discharged tonnage against stowage plans, monitoring discharge rate (Metric Tons / Hour).
+  - Tug & Pilotage Scheduling: Manage tugboat assignments and pilot boarding times.
+
+
+3. SHIPPING AGENT PORTAL (Used by: Shipping Agent)
+--------------------------------------------------
+• How it Works:
+  Enables maritime shipping agents to register vessels, upload cargo manifests, request Delivery Orders (DO), and monitor account balances.
+• Key Features Present:
+  - Vessel Registration & FAL Declarations: Submit vessel profiles, IMO numbers, flag state, call sign, and FAL pre-arrival security declarations.
+  - Import/Export Manifest Filing (IGM/EGM): Upload IGM manifests containing Bills of Lading (BL), container numbers, seal IDs, TEU sizes, hazmat status, and gross weight.
+  - Delivery Order (DO) Application: Apply for digital DO release once cargo is discharged and customs holds are cleared.
+  - Personal Deposit Account (PDA) Ledger: View real-time PDA balance, top-up receipts, and itemized debit deductions for port dues and berth hire.
+  - Application Status Tracking: Monitor approval state of filed manifests, vessel calls, and DO applications.
+
+
+4. CARGO & STORAGE INVENTORY MODULE (Used by: Warehouse Manager)
+----------------------------------------------------------------
+• How it Works:
+  Controls physical storage across Transit Sheds and Open Storage Yards, tracking precise cargo placement and physical condition.
+• Key Features Present:
+  - Yard & Shed Allocation: Assign specific grid zones (e.g., Transit Shed 1, Plot Alpha) based on cargo type (Bulk, Breakbulk, Container, Hazmat).
+  - Internal Cargo Transfers: Log movements between transit sheds, open yards, and bonded areas.
+  - Reefer Container Management: Log temperature settings, power plug-in/plug-out timestamps, and monitoring alerts for refrigerated containers.
+  - Inventory Adjustments & Survey Variance: Reconcile physical tally weight with manifest weight, recording variance reasons and survey overrides.
+  - Space Capacity Visualization: View available vs occupied square meters / metric tons per storage zone.
+
+
+5. CUSTOMS CLEARANCE MODULE (Used by: Customs Officer)
+------------------------------------------------------
+• How it Works:
+  Integrates regulatory customs checks into port operations to ensure no cargo leaves the port without statutory clearance.
+• Key Features Present:
+  - Bill of Entry (BOE) & Shipping Bill Review: Inspect filed documents against manifest data.
+  - Status Updates: Issue Out of Charge (OOC) orders for imports and Let Export Order (LEO) for exports.
+  - Regulatory Customs Holds: Place instantaneous digital holds/seizures on specific containers or consignments pending physical inspection or duty payment.
+  - ICEGATE Synchronization: Track status of duty payments and electronic customs passes.
+
+
+6. BILLING & FINANCE MODULE (Used by: Finance Officer)
+------------------------------------------------------
+• How it Works:
+  Automates tariff application, invoice generation, demurrage rent calculation, and PDA account settlements.
+• Key Features Present:
+  - Schedule of Rates (SOR) Tariff Engine: Configurable rates for Berth Hire, Port Dues, Pilotage, Stevedoring, and Storage Rent.
+  - Demurrage Rent Calculator: Automatically determines free storage days (e.g., 3 free days for bulk cargo) and computes tiered penal rent for overdue cargo.
+  - Automated Invoicing: Generate itemized proforma and final tax invoices for shipping lines and cargo importers.
+  - PDA Account Settlements: Automatic debiting of PDA balances upon invoice finalization with instant digital receipts.
+
+
+7. USER & ROLE MANAGEMENT MODULE (Used by: Super Admin)
+--------------------------------------------------------
+• How it Works:
+  Manages system security, user provisioning, and role-based permissions (RBAC).
+• Key Features Present:
+  - User Provisioning: Create, update, or deactivate user accounts.
+  - Role Assignment: Assign granular roles (Super Admin, Port Operations Officer, Warehouse Manager, Customs Officer, Shipping Agent, Finance).
+  - Security Audit Logs: System-wide activity tracking recording IP address, timestamp, user ID, and modified records.
+
+
+8. REPORTS & ANALYTICS MODULE
+-----------------------------
+• How it Works:
+  Generates operational intelligence reports and operational performance metrics.
+• Key Features Present:
+  - Vessel Turnaround Time (TAT) Analytics: Average waiting time vs berth time reports.
+  - Cargo Throughput Reports: Daily, weekly, and monthly tonnage statistics by commodity type.
+  - Storage Utilization Reports: Historical occupancy rates across transit sheds and yards.
+  - Data Export: Export reports to CSV, PDF, and DOCX formats.
+
+
+9. SETTINGS MODULE
+------------------
+• How it Works:
+  System configuration hub for operational parameters.
+• Key Features Present:
+  - SOR Tariff Rule Manager: Update tariff rates per GRT (Gross Registered Tonnage) or per TEU.
+  - Holiday Registry: Maintain official port holidays for accurate free-day calculations.
+  - System Notification Controls: Manage automated email/system alert thresholds.
+
+
+10. PYTHON PIMS ASYNC LEDGER SERVICE (`/python_pims`)
+------------------------------------------------------
+• How it Works:
+  Runs as an independent, high-speed Python FastAPI engine providing an immutable ledger and background automated tasks.
+• Key Features Present:
+  - Weighbridge Tracking API: High-throughput ingestion of gross and tare truck weights.
+  - Real-Time Stevedoring Tally Ledger: ACID-compliant ledger tracking cargo discharge unit-by-unit.
+  - Background Demurrage Scheduler (APScheduler): Automated daily cron job that audits all stored cargo, flags overdue items exceeding free days, and computes demurrage penalties automatically.
+  - Variance Reconciliation API: Enables authorized personnel to commit physical survey weight overrides with full audit logging.
+
+
+================================================================================
+PART 8: COMMON TROUBLESHOOTING & FAQ
+================================================================================
+Q: Database connection fails on backend or python_pims?
+A: Check PostgreSQL service is active, `port_inventory` database exists, and DB password
+   in `backend/.env` and `python_pims/database.py` matches your PostgreSQL installation.
+
+Q: How to re-seed database from scratch?
+A: Run `DROP DATABASE port_inventory; CREATE DATABASE port_inventory;` in PostgreSQL,
+   then run `npm run seed` in the `backend/` directory.
+
+Q: Where to view Python API documentation?
+A: Open http://localhost:8000/docs in your browser when `python_pims` is running.
+
+
+================================================================================
+                           END OF WORKING TUTORIAL
+================================================================================

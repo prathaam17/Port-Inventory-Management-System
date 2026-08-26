@@ -8,7 +8,7 @@ const AuditLog = sequelize.define('AuditLog', {
     autoIncrement: true
   },
   userId: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.UUID,
     allowNull: true
   },
   username: {
@@ -22,6 +22,10 @@ const AuditLog = sequelize.define('AuditLog', {
   action: {
     type: DataTypes.STRING,
     allowNull: false
+  },
+  affectedTable: {
+    type: DataTypes.STRING,
+    allowNull: true
   },
   details: {
     type: DataTypes.TEXT,

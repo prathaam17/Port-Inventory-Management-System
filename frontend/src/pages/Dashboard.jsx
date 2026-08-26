@@ -34,6 +34,12 @@ const Dashboard = () => {
   const { triggerToast } = useContext(NotificationContext);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (user?.role === 'Shipping Agent') {
+      navigate('/shipping-portal', { replace: true });
+    }
+  }, [user, navigate]);
+
   const [stats, setStats] = useState(null);
   const [charts, setCharts] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -76,35 +82,27 @@ const Dashboard = () => {
         return [
           { label: 'Upload Cargo Manifest', desc: 'Register newly docked cargo manifests', route: '/cargo', icon: FilePlus, color: 'bg-sky-500' },
           { label: 'Verify Customs Documents', desc: 'Approve or hold cargo imports', route: '/customs', icon: FileCheck, color: 'bg-indigo-500' },
-          { label: 'Issue Gate Pass QR', desc: 'Generate entry passes for trucks', route: '/gate', icon: QrCode, color: 'bg-emerald-500' },
-          { label: 'Manage Accounts & Roles', desc: 'Edit system directory users', route: '/users', icon: Coins, color: 'bg-amber-500' }
+          { label: 'Manage Accounts & Roles', desc: 'Edit system directory users', route: '/users', icon: IndianRupee, color: 'bg-amber-500' }
         ];
       case 'Shipping Agent':
         return [
           { label: 'Upload Cargo Manifest', desc: 'Submit a new cargo log', route: '/cargo', icon: FilePlus, color: 'bg-sky-500' },
-          { label: 'Request Gate Pass', desc: 'Submit truck driver information', route: '/gate', icon: QrCode, color: 'bg-emerald-500' },
-          { label: 'Outstanding Payments', desc: 'View cargo storage invoices', route: '/billing', icon: Coins, color: 'bg-amber-500' }
+          { label: 'Outstanding Payments', desc: 'View cargo storage invoices', route: '/billing', icon: IndianRupee, color: 'bg-amber-500' }
         ];
       case 'Port Operations Officer':
-        return [
-          { label: 'Dock Unloading logs', desc: 'Log cargo unloading tasks', route: '/cargo', icon: Compass, color: 'bg-sky-500' }
-        ];
       case 'Warehouse Manager':
         return [
-          { label: 'Allocate Warehouse Bay', desc: 'Map active cargo to storage', route: '/warehouse', icon: Warehouse, color: 'bg-sky-500' },
-          { label: 'Report Damaged Goods', desc: 'File damage reports to yard', route: '/warehouse', icon: AlertCircle, color: 'bg-rose-500' }
+          { label: 'Vessel Operations', desc: 'Manage vessel calls and quays', route: '/operations-portal?tab=vessels', icon: Ship, color: 'bg-sky-500' },
+          { label: 'Allocate Warehouse Bay', desc: 'Map active cargo to storage', route: '/operations-portal?tab=inventory', icon: Warehouse, color: 'bg-indigo-500' },
+          { label: 'Report Damaged Goods', desc: 'File damage reports to yard', route: '/operations-portal?tab=damage', icon: AlertCircle, color: 'bg-rose-500' }
         ];
       case 'Customs Officer':
         return [
           { label: 'Review Pending Customs', desc: 'Verify bill of lading logs', route: '/customs', icon: FileCheck, color: 'bg-indigo-500' }
         ];
-      case 'Gate Officer':
-        return [
-          { label: 'QR Scanner Simulator', desc: 'Check trucks in/out of port', route: '/gate', icon: QrCode, color: 'bg-emerald-500' }
-        ];
       case 'Finance':
         return [
-          { label: 'Collect Billing Storage', desc: 'Settle invoices and demurrage', route: '/billing', icon: Coins, color: 'bg-amber-500' }
+          { label: 'Collect Billing Storage', desc: 'Settle invoices and demurrage', route: '/billing', icon: IndianRupee, color: 'bg-amber-500' }
         ];
       default:
         return [];
@@ -125,7 +123,7 @@ const Dashboard = () => {
       {/* Top Banner Welcoming User */}
       <div className="flex flex-col md:flex-row md:items-center justify-between p-6 bg-white rounded-3xl text-slate-800 border border-slate-200 shadow-sm select-none">
         <div>
-          <h2 className="text-2xl font-extrabold text-slate-800">NMPA Central Hub Terminal</h2>
+          <h2 className="text-2xl font-extrabold text-slate-800">mngprt Central Hub Terminal</h2>
           <p className="text-sm text-slate-500 mt-1">
             Logged in as <strong className="text-sky-600 font-semibold">{user?.username}</strong> ({user?.role}) | Operational Center.
           </p>
@@ -202,7 +200,7 @@ const Dashboard = () => {
           <div className="flex justify-between items-center mb-6">
             <div>
               <h3 className="font-bold text-lg text-slate-800 dark:text-white">Daily Tonnage Dispatched (Metric Tons)</h3>
-              <p className="text-sm text-slate-400 font-light">Recent 7-day loading weight logged at NMPA gates</p>
+              <p className="text-sm text-slate-400 font-light">Recent 7-day loading weight logged at mngprt gates</p>
             </div>
             <TrendingUp className="w-5 h-5 text-sky-500" />
           </div>
@@ -219,6 +217,14 @@ const Dashboard = () => {
                     <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.4}/>
                     <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0}/>
                   </linearGradient>
+                  <linearGradient id="bulkGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="breakBulkGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                  </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.15} />
                 <XAxis dataKey="day" stroke="#64748b" />
@@ -226,6 +232,8 @@ const Dashboard = () => {
                 <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '12px', color: 'white' }} />
                 <Area type="monotone" dataKey="Container" stroke="#38bdf8" strokeWidth={2.5} fillOpacity={1} fill="url(#containerGrad)" />
                 <Area type="monotone" dataKey="Liquid" stroke="#0ea5e9" strokeWidth={2.5} fillOpacity={1} fill="url(#liquidGrad)" />
+                <Area type="monotone" dataKey="Bulk" stroke="#f59e0b" strokeWidth={2.5} fillOpacity={1} fill="url(#bulkGrad)" />
+                <Area type="monotone" dataKey="BreakBulk" stroke="#10b981" strokeWidth={2.5} fillOpacity={1} fill="url(#breakBulkGrad)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
